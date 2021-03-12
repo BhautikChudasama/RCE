@@ -1,0 +1,16 @@
+{
+  "name": "remote-code-execution",
+  "version": "1.0.0",
+  "description": "Remote code execution engine that executes languages.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@rauschma/stringio": "^1.4.0",
+    "express": "^4.17.1",
+    "tmp": "^0.2.1"
+  }
+}
