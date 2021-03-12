@@ -1,7 +1,7 @@
 
 /// Packages
 const express = require("express");
-const { java, others } = require("./languages/index.js");
+const { java, others, cpp, c } = require("./languages/index.js");
 
 ///////////// Polyfills /////////////////
 
@@ -65,7 +65,19 @@ async function run(lang, code, inputs, expOutput) {
     if(lang === "java") {
       let filePath = `/tmp/Program.java`;
       /// It will create file if not exist ; if exist then overwrite
-      let output = java(filePath, code, inputs, expOutput);
+      let output = await java(filePath, code, inputs, expOutput);
+      resolve(output);
+    }
+    else if(lang === "cpp") {
+      let output = await cpp(code, inputs, expOutput);
+      resolve(output);
+    }
+    else if(lang === "c") {
+      let output = await c(code, inputs, expOutput);
+      resolve(output);
+    }
+    else if(lang === "php") {
+      let output = await php(code, inputs, expOutput);
       resolve(output);
     }
     else {
