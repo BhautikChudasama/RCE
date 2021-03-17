@@ -1,0 +1,8 @@
+
+version: "3.9"
+services:
+  rce:
+    build: .
+    ports:
+      - 5124:5124
+

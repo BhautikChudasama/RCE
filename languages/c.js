@@ -41,24 +41,25 @@ async function compile(code, inputs, expOutput) {
     fs.writeFileSync(filePath, code, {flag: "w+"});
 
     /// Compile java progam with file name Program.java
-    exec(`g++ -o ${file.name.split(".")[0]} ${filePath}`, {timeout: 4000}, async(err, stdout, stderr) => {
+    let p = exec(`g++ -o ${file.name.split(".")[0]} ${filePath}`, {timeout: 4000}, async(err, stdout, stderr) => {
     
       if(err) {
         file.removeCallback();
-        return resolve({success: false, message: err.toString().replaceAll("↵", "\n")});
+        return resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: err.toString().replaceAll("\n", "↵")});
       }
       else if(stderr) {
         file.removeCallback();
-        return resolve({success: false, message: stderr.toString().replaceAll("↵", "\n")});
+        return resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: stderr.toString().replaceAll("\n", "↵")});
       }
       else {
         /// This function executes java program
         let output = await run(file.name.split(".")[0], inputs, expOutput);
         file.removeCallback();
-        fs.unlinkSync(file.name.split(".")[0]);
+        fs.unlinkSync(file.name.split(".")[0]); /// Deleting compilation file
         resolve(output);
       }
     });
+    
   });
 }
 
@@ -75,12 +76,11 @@ async function run(path, inputs, expOutput) {
     let timout = setTimeout(() => {
       if(!p.killed) {
         p.kill(); /// Kill after 4s
-        resolve({success: false, message: `Program killed due to time`});
+        resolve({matches: false, message: "Program was killed due to resource limits", hasError: false, expected: expOutput.toString(), actual: "", outOfResources: true});
       } 
     }, 4000);
 
     let result = "";
-    expOutput+="\n";
 
     /// Whenever data is received add to result
     p.stdout.on("data", (data) => {
@@ -89,12 +89,17 @@ async function run(path, inputs, expOutput) {
 
     /// When output stream end
     p.stdout.on("end", () => {
+      p.kill();
       clearInterval(timout);
 
+      result = result.split("\n"); 
+      result[result.length-1]==="" ? result.pop() : null;
+      result = result.join("\n");
+
       if(result.toString() == expOutput.toString()) 
-        resolve({success: true});
+        resolve({matches: true, message: "Program works correctly", hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""});
       else 
-        resolve({success: false, message: `expected ${expOutput.toString().replace("\n", "")} but received ${result.toString().replace("\n", "")}`})
+        resolve({matches: false, message: `expected ${expOutput.toString().replace("\n", "↵")} but received ${result.toString().replace("\n", "↵")}`, hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""})
       
     });
 
@@ -110,7 +115,7 @@ async function run(path, inputs, expOutput) {
       if(error) {
         p.kill();
         clearInterval(timout);
-        resolve({success: false, message: "Error in program!", err: error});
+        resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: error.toString().replaceAll("\n", "↵")});
       }
     });
 
@@ -120,7 +125,10 @@ async function run(path, inputs, expOutput) {
       for(let i=0; i<inputs.length; i+=1) {
         streamWrite(p.stdin, `${inputs[i]}\n`);
       }
+      p.stdin.end();
     }
+    else
+      p.stdin.end();
   });
 }
 

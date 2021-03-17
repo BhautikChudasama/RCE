@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "BhautikChudasama",
   "license": "Apache-2.0",
   "dependencies": {
     "@rauschma/stringio": "^1.4.0",

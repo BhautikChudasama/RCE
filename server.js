@@ -76,11 +76,8 @@ async function run(lang, code, inputs, expOutput) {
       let output = await c(code, inputs, expOutput);
       resolve(output);
     }
-    else if(lang === "php") {
-      let output = await php(code, inputs, expOutput);
-      resolve(output);
-    }
     else {
+      /// All Interpreters type languages
       let output = await others(lang, code, inputs, expOutput);
       resolve(output);
     }
@@ -93,15 +90,26 @@ async function run(lang, code, inputs, expOutput) {
 const server = app.listen(5124, () => console.log("app is listening!"));
 
 process.on("SIGINT", (si) => {
-  server.close((err) => err?console.log("Error occurred while stopping server"):console.log("Server closed"));
+  server.close((err) => {
+    if(err) {
+      console.error(err);
+      process.exit(1);
+    }
+  });
   process.exit(0);
+
   // setTimeout(() => {
   //   process.exit(0);
   // }, 1000); /// 10s
 });
 
 process.on("SIGTERM", (si) => {
-  server.close((err) => err?console.log("Error occurred while stopping server"):console.log("Server closed"));
+  server.close((err) => {
+    if(err) {
+      console.error(err);
+      process.exit(1);
+    }
+  });
   process.exit(0);
   // setTimeout(() => {
   //   process.exit(0);

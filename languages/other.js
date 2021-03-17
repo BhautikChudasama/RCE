@@ -4,21 +4,6 @@ const fs = require("fs");
 const { spawn } = require("child_process");
 const { streamWrite } = require("@rauschma/stringio");
 
-
-if (!String.prototype.replaceAll) {
-	String.prototype.replaceAll = function(str, newStr){
-
-		// If a regex pattern
-		if (Object.prototype.toString.call(str).toLowerCase() === '[object regexp]') {
-			return this.replace(str, newStr);
-		}
-
-		// If a string
-		return this.replace(new RegExp(str, 'g'), newStr);
-
-	};
-}
-
 /**
  * Executes JS, PYTHON programs
  * @param {String} lang - Language - python | go | js
@@ -49,6 +34,9 @@ async function others(lang, code, inputs, expOutput) {
             command = "sh";
             extension = ".sh"
             break;
+        case "php":
+            command = "php";
+            extension = ".php";
         }
 
         let filePath = null;
@@ -66,20 +54,24 @@ async function others(lang, code, inputs, expOutput) {
 
         /// Other languages PYTHON | JS
         if(command !== "go")
-            p = spawn(command, [filePath], {stdio: ["pipe"], shell: true, cwd: "/tmp"});
+            p = spawn(command, [filePath], {stdio: ["pipe"], shell: true, cwd: "/tmp"}); /// > command file.ext
         else 
-            p = spawn(command, ["run", filePath], {stdio: ["pipe"], shell: true, cwd: "/tmp"});
+            p = spawn(command, ["run", filePath], {stdio: ["pipe"], shell: true, cwd: "/tmp"}); /// > go run file.go
 
-        let timout = setTimeout(() => {
+        let timeout = setTimeout(() => {
             if(!p.killed) {
                 p.kill(); /// Kill after 4s
+                /// Clear dir
+                let regex = new RegExp("go-build.*");
+                /// The go command caches build outputs for reuse in future builds
+                fs.readdirSync("/tmp/").filter(f => regex.test(f)).map(f => fs.rmdirSync(`/tmp/${f}`, {force: true, recursive: true}));
+                /// Deleted temp file
                 file.removeCallback();
-                resolve({success: false, message: `Program killed due to time`});
+                resolve({matches: false, message: "Program was killed due to resource limits", hasError: false, expected: expOutput.toString(), actual: "", outOfResources: true, errorMessage: ""});
             } 
         }, 4000);
 
         let result = "";
-        expOutput+="\n";
 
         /// Whenever data is received add to result
         p.stdout.on("data", (data) => {
@@ -90,12 +82,17 @@ async function others(lang, code, inputs, expOutput) {
         p.stdout.on("end", () => {
             p.kill();
             file.removeCallback();
-            clearInterval(timout);
+            clearInterval(timeout);
+            
+            /// In python after getting output append at last \n, It needs to remove
+            result = result.split("\n"); 
+            result[result.length-1]===""?result.pop():null;
+            result = result.join("\n");
 
             if(result.toString() == expOutput.toString()) 
-                resolve({success: true});
+                resolve({matches: true, message: "Program works correctly", hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""});
             else 
-                resolve({success: false, message: `expected ${expOutput.toString().replace("\n", "")} but received ${result.toString().replace("\n", "")}`})
+                resolve({matches: false, message: `expected ${expOutput.toString().replace("\n", "↵")} but received ${result.toString().replace("\n", "↵")}`, hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""});
         });
 
 
@@ -109,10 +106,9 @@ async function others(lang, code, inputs, expOutput) {
         p.stderr.on("end", () => {
             if(error) {
                 p.kill();
-                clearInterval(timout);
-                if(command != "java")
+                clearInterval(timeout);
                 file.removeCallback();
-                resolve({success: false, message: "Error in program!", err: error});
+                resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: error.toString()});
             }
         });
 
@@ -122,7 +118,10 @@ async function others(lang, code, inputs, expOutput) {
             for(let i=0; i<inputs.length; i+=1) {
                 streamWrite(p.stdin, `${inputs[i]}\n`);
             }
+            p.stdin.end();
         }
+        else 
+            p.stdin.end();
     });
 }
 
