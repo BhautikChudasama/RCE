@@ -1,6 +1,7 @@
 
 /// Packages
 const express = require("express");
+const cors = require("cors");
 const { java, others, cpp, c } = require("./languages/index.js");
 
 ///////////// Polyfills /////////////////
@@ -27,8 +28,12 @@ const app = express();
 /// Middleware
 app.use(express.json());
 
+/// TODO: Add host in PRODUCTION
+app.use(cors());
+
 /// APIs
 app.post("/run", async(req, res) => {
+    let startTime = Date.now();
     let lang = req.body.language;
     let code = req.body.code;
     let input = req.body.input;
@@ -37,13 +42,15 @@ app.post("/run", async(req, res) => {
     if(!lang || !code || !input || !eo) {
         return res.status(401).json({
             success: false,
-            message: "Unexpected inputs"
+            message: "Unexpected inputs",
+            totalTime: Date.now() - time
         });
     }
 
     /// Run program
+    /// Return time in milliseconds
     let result = await run(lang, code, input, eo);
-    return res.status(200).json(result);
+    return res.status(200).json({...result, ...{totalTime: Date.now() - startTime}});
     
 });
 
@@ -97,7 +104,7 @@ process.on("SIGINT", (si) => {
     }
   });
   process.exit(0);
-
+  /// TODO: In production Graceful ShutDown
   // setTimeout(() => {
   //   process.exit(0);
   // }, 1000); /// 10s
@@ -111,6 +118,7 @@ process.on("SIGTERM", (si) => {
     }
   });
   process.exit(0);
+  /// TODO: In production Graceful ShutDown
   // setTimeout(() => {
   //   process.exit(0);
   // }, 1000); /// 10s
