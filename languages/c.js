@@ -36,7 +36,6 @@ async function compile(code, inputs, expOutput) {
     
     let file = tmp.fileSync({postfix: ".c"});
     let filePath = file.name;
-    code = code.replaceAll("↵", "\n");
 
     fs.writeFileSync(filePath, code, {flag: "w+"});
 
@@ -45,11 +44,11 @@ async function compile(code, inputs, expOutput) {
     
       if(err) {
         file.removeCallback();
-        return resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: err.toString().replaceAll("\n", "↵")});
+        return resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: err.toString()});
       }
       else if(stderr) {
         file.removeCallback();
-        return resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: stderr.toString().replaceAll("\n", "↵")});
+        return resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: stderr.toString()});
       }
       else {
         /// This function executes java program
@@ -92,14 +91,14 @@ async function run(path, inputs, expOutput) {
       p.kill();
       clearInterval(timout);
 
-      result = result.split("\n"); 
-      result[result.length-1]==="" ? result.pop() : null;
-      result = result.join("\n");
+      // result = result.split("\n"); 
+      // result[result.length-1]==="" ? result.pop() : null;
+      // result = result.join("\n");
 
       if(result.toString() == expOutput.toString()) 
         resolve({matches: true, message: "Program works correctly", hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""});
       else 
-        resolve({matches: false, message: `expected ${expOutput.toString().replace("\n", "↵")} but received ${result.toString().replace("\n", "↵")}`, hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""})
+        resolve({matches: false, message: `expected ${expOutput.toString()} but received ${result.toString()}`, hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""})
       
     });
 
@@ -108,27 +107,24 @@ async function run(path, inputs, expOutput) {
 
     /// Error occur in program
     p.stderr.on("data", (err) => {
-      error += err.toString().replaceAll("\n", "↵");
+      error += err.toString();
     });
 
     p.stderr.on("end", () => {
       if(error) {
         p.kill();
         clearInterval(timout);
-        resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: error.toString().replaceAll("\n", "↵")});
+        resolve({matches: false, message: "Program has errors", hasError: true, expected: expOutput.toString(), actual: "", outOfResources: false, errorMessage: error.toString()});
       }
     });
 
-    /// Pass input to process in STDIN if needs input
-    if(inputs.length > 0) {
-      /// Supply inputs
-      for(let i=0; i<inputs.length; i+=1) {
-        streamWrite(p.stdin, `${inputs[i]}\n`);
+     /// Pass input to process in STDIN if needs input
+     if(inputs) {
+        streamWrite(p.stdin, inputs);
+        p.stdin.end();
       }
-      p.stdin.end();
-    }
-    else
-      p.stdin.end();
+      else 
+        p.stdin.end();
   });
 }
 

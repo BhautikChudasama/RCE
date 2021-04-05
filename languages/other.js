@@ -45,7 +45,7 @@ async function others(lang, code, inputs, expOutput) {
      
         file = tmp.fileSync({postfix: extension});
         filePath = file.name;
-        code = code.replaceAll("↵", "\n");
+     
 
         /// We also set limit to write size
         fs.writeFileSync(file.fd, code);
@@ -84,15 +84,15 @@ async function others(lang, code, inputs, expOutput) {
             file.removeCallback();
             clearInterval(timeout);
             
-            /// In python after getting output append at last \n, It needs to remove
-            result = result.split("\n"); 
-            result[result.length-1]===""?result.pop():null;
-            result = result.join("\n");
+            // /// In python after getting output append at last \n, It needs to remove
+            // result = result.split("\n"); 
+            // result[result.length-1]===""?result.pop():null;
+            // result = result.join("\n");
 
             if(result.toString() == expOutput.toString()) 
                 resolve({matches: true, message: "Program works correctly", hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""});
             else 
-                resolve({matches: false, message: `expected ${expOutput.toString().replace("\n", "↵")} but received ${result.toString().replace("\n", "↵")}`, hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""});
+                resolve({matches: false, message: `expected ${expOutput.toString().replace("\n", "\n")} but received ${result.toString().replace("\n", "\n")}`, hasError: false, expected: expOutput.toString(), actual: result.toString(), outOfResources: false, errorMessage: ""});
         });
 
 
@@ -100,7 +100,7 @@ async function others(lang, code, inputs, expOutput) {
 
         /// Error occur in program
         p.stderr.on("data", (err) => {
-            error += err.toString().replaceAll("\n", "↵");
+            error += err.toString();
         });
 
         p.stderr.on("end", () => {
@@ -113,11 +113,8 @@ async function others(lang, code, inputs, expOutput) {
         });
 
         /// Pass input to process in STDIN if needs input
-        if(inputs.length > 0) {
-            /// Supply inputs
-            for(let i=0; i<inputs.length; i+=1) {
-                streamWrite(p.stdin, `${inputs[i]}\n`);
-            }
+        if(inputs) {
+            streamWrite(p.stdin, inputs);
             p.stdin.end();
         }
         else 
