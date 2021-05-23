@@ -2,7 +2,7 @@
 const tmp = require("tmp");
 const fs = require("fs");
 const { spawn } = require("child_process");
-const { streamWrite } = require("@rauschma/stringio");
+const { streamWrite, streamEnd } = require("@rauschma/stringio");
 
 /**
  * Executes JS, PYTHON programs
@@ -13,7 +13,7 @@ const { streamWrite } = require("@rauschma/stringio");
  * @returns {Promise<Object>} - Return output
  */
 async function others(lang, code, inputs, expOutput) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async(resolve, reject) => {
         let command = ""; /// The command that we use to run the program
         let extension = ""; /// File extension from language
 
@@ -113,12 +113,13 @@ async function others(lang, code, inputs, expOutput) {
         });
 
         /// Pass input to process in STDIN if needs input
-        if(inputs) {
-            streamWrite(p.stdin, inputs);
-            p.stdin.end();
+        try {
+                 if (inputs) {
+                 await streamWrite(p.stdin, inputs);
+                 await streamEnd(p.stdin);
+             } else await streamEnd(p.stdin);
         }
-        else 
-            p.stdin.end();
+        catch(e) {}
     });
 }
 

@@ -2,7 +2,7 @@
 /// Compiled language
 
 const { exec, spawn } = require("child_process");
-const { streamWrite } = require("@rauschma/stringio");
+const { streamWrite, streamEnd } = require("@rauschma/stringio");
 const fs = require("fs");
 const tmp = require("tmp");
 
@@ -29,7 +29,7 @@ async function cpp(code, inputs, expOutput) {
  * @returns 
  */
 async function compile(code, inputs, expOutput) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
     
     let file = tmp.fileSync({postfix: ".cpp"});
     let filePath = file.name;
@@ -65,7 +65,7 @@ async function compile(code, inputs, expOutput) {
  * @returns 
  */
 async function run(path, inputs, expOutput) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
     let p = spawn(path, {stdio: ["pipe"]});
       
     let timout = setTimeout(() => {
@@ -114,12 +114,12 @@ async function run(path, inputs, expOutput) {
     });
 
      /// Pass input to process in STDIN if needs input
-     if(inputs) {
-        streamWrite(p.stdin, inputs);
-        p.stdin.end();
-      }
-      else 
-        p.stdin.end();
+     try {
+         if (inputs) {
+             await streamWrite(p.stdin, inputs);
+             await streamEnd(p.stdin);
+         } else await streamEnd(p.stdin);
+     } catch (e) {}
   });
 }
 

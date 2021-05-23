@@ -1,6 +1,6 @@
 
 const { exec, spawn } = require("child_process");
-const { streamWrite } = require("@rauschma/stringio");
+const { streamWrite, streamEnd } = require("@rauschma/stringio");
 const fs = require("fs");
 
 /**
@@ -26,7 +26,7 @@ async function java(filePath, code, inputs, expOutput) {
  * @returns 
  */
 async function compile(path, code, inputs, expOutput) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
     
     fs.writeFileSync(path, code, {flag: "w+"});
 
@@ -55,7 +55,7 @@ async function compile(path, code, inputs, expOutput) {
  * @returns 
  */
 async function run(inputs, expOutput) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
     let p = spawn("java", ["Program"], {stdio: ["pipe"]});
       
     let timout = setTimeout(() => {
@@ -105,12 +105,13 @@ async function run(inputs, expOutput) {
     });
 
      /// Pass input to process in STDIN if needs input
-     if(inputs) {
-      streamWrite(p.stdin, inputs);
-      p.stdin.end();
-      }
-      else 
-          p.stdin.end();
+     try {
+           if (inputs) {
+             await streamWrite(p.stdin, inputs);
+             await streamEnd(p.stdin);
+         } else await streamEnd(p.stdin);
+     }
+     catch(e) {}
   });
 }
 

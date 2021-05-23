@@ -1,0 +1,27 @@
+name: RCE
+on:
+  push:
+    branches:
+      - "master"
+jobs:
+  build:
+    name: docker-push
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker push
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ghcr.io/BhautikChudasama/RCE:${GITHUB_REF##*/}-${GITHUB_SHA:0:7}-$(date +%s)
+          
+
+
+

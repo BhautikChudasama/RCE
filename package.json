@@ -4,6 +4,7 @@
   "description": "Remote code execution engine that executes languages.",
   "main": "server.js",
   "scripts": {
+    "lint": "eslint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "BhautikChudasama",
@@ -13,5 +14,11 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "tmp": "^0.2.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "eslint": "^7.27.0",
+    "typescript": "^4.2.4"
   }
 }
