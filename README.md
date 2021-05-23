@@ -1,5 +1,5 @@
 # Remote Code Execution (RCE)
-Remote Code Execution allow you to run code via send APIs.
+Remote Code Execution allow you to run code by send APIs.
 
 Postman Docs: https://documenter.getpostman.com/view/14855427/Tz5tYFx2
 
