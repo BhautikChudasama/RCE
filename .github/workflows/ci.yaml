@@ -19,8 +19,8 @@ jobs:
       - name: Docker push
         shell: bash
         run: |
-          docker build -t ghcr.io/BhautikChudasama/RCE:${GITHUB_REF##*/}-${GITHUB_SHA:0:7}-$(date +%s) .
-          docker push ghcr.io/BhautikChudasama/RCE:${GITHUB_REF##*/}-${GITHUB_SHA:0:7}-$(date +%s)
+          docker build -t ghcr.io/bhautikchudasama/rce:${GITHUB_REF##*/}-${GITHUB_SHA:0:7}-$(date +%s) .
+          docker push ghcr.io/bhautikchudasama/rce:${GITHUB_REF##*/}-${GITHUB_SHA:0:7}-$(date +%s)
         
 
 
