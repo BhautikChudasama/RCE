@@ -17,11 +17,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: ghcr.io/BhautikChudasama/RCE:${{GITHUB_REF}}##*/-${{GITHUB_SHA:0:7}}-$(date +%s)
-          
+        shell: bash
+        run: printenv
 
 
 
