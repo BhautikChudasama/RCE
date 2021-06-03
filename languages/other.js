@@ -26,7 +26,7 @@ async function others(lang, code, inputs, expOutput) {
             command = "go";
             extension = ".go"
             break;
-        case "js":
+        case "javascript":
             command = "node";
             extension = ".js"
             break;

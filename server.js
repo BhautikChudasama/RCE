@@ -43,7 +43,7 @@ app.post("/run", async(req, res) => {
         return res.status(401).json({
             success: false,
             message: "Unexpected inputs",
-            totalTime: Date.now() - time
+            totalTime: Date.now() - startTime
         });
     }
 
@@ -79,7 +79,7 @@ async function run(lang, code, inputs, expOutput) {
       let output = await cpp(code, inputs, expOutput);
       resolve(output);
     }
-    else if(lang === "c") {
+    else if(lang === "objective-c") {
       let output = await c(code, inputs, expOutput);
       resolve(output);
     }
@@ -92,6 +92,9 @@ async function run(lang, code, inputs, expOutput) {
   });
 }
 
+app.use("*", (req, res) => {
+  res.status(404).send("Page not found!");
+});
 
 /// Server
 const server = app.listen(5124, () => console.log("app is listening!"));
