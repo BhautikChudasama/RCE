@@ -1,8 +1,6 @@
-
 version: "2.2"
 services:
   rce:
     build: .
     ports:
       - 5124:5124
-

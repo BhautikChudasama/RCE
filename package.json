@@ -1,24 +1,31 @@
 {
   "name": "remote-code-execution",
   "version": "1.0.0",
-  "description": "Remote code execution engine that executes languages.",
+  "description": "Remote code execution engine that executes code.",
   "main": "server.js",
   "scripts": {
-    "lint": "eslint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint --fix && npx prettier --write .",
+    "test": "mocha --timeout 10000 --exit"
   },
   "author": "BhautikChudasama",
   "license": "Apache-2.0",
   "dependencies": {
     "@rauschma/stringio": "^1.4.0",
+    "chai": "^4.3.4",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "process-list": "^2.0.0",
+    "terminate": "^2.2.0",
     "tmp": "^0.2.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.24.0",
     "@typescript-eslint/parser": "^4.24.0",
     "eslint": "^7.27.0",
-    "typescript": "^4.2.4"
+    "prettier": "2.3.1",
+    "typescript": "^4.2.4",
+    "chai": "*",
+    "mocha": "*",
+    "chai-http": "*"
   }
 }

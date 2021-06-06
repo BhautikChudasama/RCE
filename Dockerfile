@@ -32,6 +32,7 @@ RUN apk add php7
 ### GCC INSTALLATION
 RUN apk add g++
 
+RUN apk add --update alpine-sdk
 
 COPY package*.json ./
 

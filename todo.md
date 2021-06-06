@@ -1,8 +1,3 @@
-
 # Todo
 
-- Fix stream error
-- GitHub Action
-- Try BuildKit
-- Deploy Editor
-
+- Fix Java concurrency problem
