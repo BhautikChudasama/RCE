@@ -12,6 +12,7 @@ const SUPPORTED_LANGUAGES = [
   "python",
   "go",
   "javascript",
+  "php",
 ];
 
 ///////////// Polyfills /////////////////
@@ -88,9 +89,8 @@ async function run(lang, code, inputs, expOutput) {
     /// Execution of JAVA
     /// Before run java program set default classpath
     if (lang === "java") {
-      let filePath = `/tmp/Program.java`;
       /// It will create file if not exist ; if exist then overwrite
-      let output = await java(filePath, code, inputs, expOutput);
+      let output = await java(code, inputs, expOutput);
       resolve(output);
     } else if (lang === "cpp") {
       let output = await cpp(code, inputs, expOutput);
