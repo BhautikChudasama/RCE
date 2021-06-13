@@ -1,6 +1,7 @@
 const { exec, spawn } = require("child_process");
 const { streamWrite, streamEnd } = require("@rauschma/stringio");
 const fs = require("fs");
+const tmp = require("tmp");
 
 /**
  * Run the java program
@@ -10,9 +11,18 @@ const fs = require("fs");
  * @param {String} expOutput
  * @returns
  */
-async function java(filePath, code, inputs, expOutput) {
+async function java(code, inputs, expOutput) {
   return new Promise(async (resolve, reject) => {
-    resolve(await compile(filePath, code, inputs, expOutput));
+    const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    resolve(
+      await compile(
+        `${tmpDir.name}/Program.java`,
+        code,
+        inputs,
+        expOutput,
+        tmpDir
+      )
+    );
   });
 }
 
@@ -24,38 +34,43 @@ async function java(filePath, code, inputs, expOutput) {
  * @param {expOutput} expOutput
  * @returns
  */
-async function compile(path, code, inputs, expOutput) {
+async function compile(path, code, inputs, expOutput, tmpDir) {
   return new Promise(async (resolve, reject) => {
     fs.writeFileSync(path, code, { flag: "w+" });
 
     /// Compile java progam with file name Program.java
-    exec(`javac ${path}`, { timeout: 4000 }, async (err, stdout, stderr) => {
-      if (err) {
-        return resolve({
-          matches: false,
-          message: "Program has errors",
-          hasError: true,
-          expected: expOutput.toString(),
-          actual: "",
-          outOfResources: false,
-          errorMessage: err.toString(),
-        });
-      } else if (stderr) {
-        return resolve({
-          matches: false,
-          message: "Program has errors",
-          hasError: true,
-          expected: expOutput.toString(),
-          actual: "",
-          outOfResources: false,
-          errorMessage: stderr.toString(),
-        });
-      } else {
-        /// This function executes java program
-        let output = await run(inputs, expOutput);
-        resolve(output);
+    exec(
+      `javac -cp . ${path}`,
+      { timeout: 4000 },
+      async (err, stdout, stderr) => {
+        if (err) {
+          return resolve({
+            matches: false,
+            message: "Program has errors",
+            hasError: true,
+            expected: expOutput.toString(),
+            actual: "",
+            outOfResources: false,
+            errorMessage: err.toString(),
+          });
+        } else if (stderr) {
+          return resolve({
+            matches: false,
+            message: "Program has errors",
+            hasError: true,
+            expected: expOutput.toString(),
+            actual: "",
+            outOfResources: false,
+            errorMessage: stderr.toString(),
+          });
+        } else {
+          /// This function executes java program
+          let output = await run(inputs, expOutput, path);
+          tmpDir.removeCallback();
+          resolve(output);
+        }
       }
-    });
+    );
   });
 }
 
@@ -65,9 +80,9 @@ async function compile(path, code, inputs, expOutput) {
  * @param {String} expOutput
  * @returns
  */
-async function run(inputs, expOutput) {
+async function run(inputs, expOutput, path) {
   return new Promise(async (resolve, reject) => {
-    let p = spawn("java", ["Program"], { stdio: ["pipe"] });
+    let p = spawn("java", [path, "Program"], { stdio: ["pipe"] });
 
     let timout = setTimeout(() => {
       if (!p.killed) {
