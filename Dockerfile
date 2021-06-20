@@ -32,11 +32,13 @@ RUN apk add php7
 ### GCC INSTALLATION
 RUN apk add g++
 
-RUN apk add --update alpine-sdk
+RUN apk add --update alpine-sdk --virtual .gyp
 
 COPY package*.json ./
 
 RUN npm install
+
+RUN apk del .gyp
 
 COPY . .
 

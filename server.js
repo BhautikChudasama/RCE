@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /// Packages
 const express = require("express");
 const cors = require("cors");
 const terminate = require("terminate");
 const { snapshot } = require("process-list");
 const { java, others, cpp, c } = require("./languages/index.js");
+const logger = require("pino")();
+const pino = require("pino-http")();
 
 const SUPPORTED_LANGUAGES = [
   "objective-c",
@@ -39,8 +42,11 @@ const app = express();
 /// Middleware
 app.use(express.json());
 
-/// TODO: Add host in PRODUCTION
+/// Add host in PRODUCTION
 app.use(cors());
+
+/// Log
+app.use(pino);
 
 /// APIs
 app.post("/run", async (req, res) => {
@@ -85,22 +91,22 @@ app.post("/run", async (req, res) => {
  * @returns {Promise<Object>} - Return output
  */
 async function run(lang, code, inputs, expOutput) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve) => {
     /// Execution of JAVA
     /// Before run java program set default classpath
     if (lang === "java") {
       /// It will create file if not exist ; if exist then overwrite
-      let output = await java(code, inputs, expOutput);
+      let output = java(code, inputs, expOutput);
       resolve(output);
     } else if (lang === "cpp") {
-      let output = await cpp(code, inputs, expOutput);
+      let output = cpp(code, inputs, expOutput);
       resolve(output);
     } else if (lang === "objective-c") {
-      let output = await c(code, inputs, expOutput);
+      let output = c(code, inputs, expOutput);
       resolve(output);
     } else {
       /// All Interpreters type languages
-      let output = await others(lang, code, inputs, expOutput);
+      let output = others(lang, code, inputs, expOutput);
       resolve(output);
     }
   });
@@ -114,7 +120,7 @@ let cleanup = null;
 
 /// Server
 const server = app.listen(5124, "0.0.0.0", () => {
-  console.log(`App is listening on ::5124`);
+  logger.info("Server is started!");
   // Start 10s cleanup
   cleanup = setInterval(() => {
     psList();
@@ -129,41 +135,48 @@ async function psList() {
     if (new Date().getTime() - new Date(task.starttime).getTime() > 10000) {
       if (task.pid !== APP_PID) {
         terminate(task.pid, (err) => {
-          if (err) console.error(err);
+          if (err) {
+            logger.info("Server is closed due to error in process!");
+            logger.error(err);
+            process.exit(1);
+          }
         });
       }
     }
   }
 }
 
-process.on("SIGINT", (si) => {
+process.on("SIGINT", () => {
+  logger.info("Server is closing due to SIGINT!");
   server.close((err) => {
     if (err) {
-      console.error(err);
+      logger.fatal(err);
       process.exit(1);
     }
   });
   clearInterval(cleanup);
-  process.exit(0);
-  /// TODO: In production Graceful ShutDown
-  // setTimeout(() => {
-  //   process.exit(0);
-  // }, 1000); /// 10s
+
+  //  In production Graceful ShutDown
+  setTimeout(() => {
+    logger.fatal("Server is closed due to SIGINT!");
+    process.exit(0);
+  }, 10000); /// 10s
 });
 
-process.on("SIGTERM", (si) => {
+process.on("SIGTERM", () => {
+  logger.error("Server is closing due to SIGTERM!");
   server.close((err) => {
     if (err) {
-      console.error(err);
+      logger.fatal(err);
       process.exit(1);
     }
   });
   clearInterval(cleanup);
-  process.exit(0);
-  /// TODO: In production Graceful ShutDown
-  // setTimeout(() => {
-  //   process.exit(0);
-  // }, 1000); /// 10s
+  // In production Graceful ShutDown
+  setTimeout(() => {
+    logger.fatal("Server is closed due to SIGTERM!");
+    process.exit(0);
+  }, 10000); /// 10s
 });
 
 module.exports = app;

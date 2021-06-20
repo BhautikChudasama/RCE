@@ -1,3 +1,5 @@
 # Todo
 
-- Fix Java concurrency problem
+- Reboot every 30mins
+- min 600m & 600millicore CPU
+- using hey test
