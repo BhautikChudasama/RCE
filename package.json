@@ -15,7 +15,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "pino": "^6.11.3",
-    "pino-http": "^5.5.0"
+    "pino-http": "^5.5.0",
+    "tmp": "^0.2.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.24.0",
