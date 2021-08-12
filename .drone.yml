@@ -18,7 +18,7 @@ steps:
 #   commands:
 #     - npm run test
 
-# volumes:
-#   - name: docker-socket
-#     host:
-#       path: /var/run/docker.sock
+volumes:
+  - name: docker-socket
+    host:
+      path: /var/run/docker.sock
