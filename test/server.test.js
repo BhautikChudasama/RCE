@@ -44,3 +44,57 @@ describe("Check programs for Python lang", () => {
       })
   })
 });
+
+
+// describe("Check program for PHP", () => {
+//   it("should run program successfully.", done => {
+//     chai.request(server)
+//       .post('/run')
+//       .send({
+//         "language": "php",
+//         "code": "<?php print(\"Hello\");",
+//         "input": "anything",
+//         "eo": "Hello"
+//       })
+//       .end((err, res) => {
+//         expect(err).to.be.null;
+//         expect(res).to.be.json
+//         expect(res).to.have.status(200)
+//         expect(res.body.matches).to.be.true
+//         expect(res.body.message).to.equal("Program works correctly")
+//         expect(res.body.expected).to.equal("Hello")
+//         expect(res.body.actual).to.equal("Hello")
+//         expect(res.body.hasError).to.be.false
+//         expect(res.body.outOfResources).to.be.false
+//         expect(res.body.errorMessage).to.equal("")
+//         done()
+//       })
+//   })
+// });
+
+
+describe("Check programs for C lang", () => {
+  it("should successfully run the program", done => {
+    chai.request(server)
+      .post('/run')
+      .send({
+        "language": "objective-c",
+        "code": "#include <stdio.h>\n\nint main() {\n\tprintf(\"Hello\");\n\treturn 0;\n}\n",
+        "input": "Hello",
+        "eo": "Hello"
+      })
+      .end((err, res) => {
+        expect(err).to.be.null;
+        expect(res).to.be.json
+        expect(res).to.have.status(200)
+        expect(res.body.matches).to.be.true
+        expect(res.body.message).to.equal("Program works correctly")
+        expect(res.body.expected).to.equal("Hello")
+        expect(res.body.actual).to.equal("Hello")
+        expect(res.body.hasError).to.be.false
+        expect(res.body.outOfResources).to.be.false
+        expect(res.body.errorMessage).to.equal("")
+        done()
+      })
+  })
+});
