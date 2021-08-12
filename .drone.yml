@@ -16,6 +16,7 @@ steps:
   image: rce-${DRONE_COMMIT}
   pull: if-not-exists
   commands:
+    - npm install
     - npm run test
 
 volumes:
