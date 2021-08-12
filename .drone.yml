@@ -7,16 +7,16 @@ steps:
   image: docker
   commands:
   - docker --version
-#   - docker build --no-cache -t rce-${DRONE_COMMIT} .
-#   volumes:
-#     - name: docker-socket
-#       path: /var/run/docker.sock
+  - docker build --no-cache -t rce-${DRONE_COMMIT} .
+  volumes:
+    - name: docker-socket
+      path: /var/run/docker.sock
 
-# - name: test-rce
-#   image: rce-${DRONE_COMMIT}
-#   pull: if-not-exists
-#   commands:
-#     - npm run test
+- name: test-rce
+  image: rce-${DRONE_COMMIT}
+  pull: if-not-exists
+  commands:
+    - npm run test
 
 volumes:
   - name: docker-socket
