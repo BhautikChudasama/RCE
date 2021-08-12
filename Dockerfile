@@ -42,9 +42,9 @@ RUN apk del .gyp
 
 COPY . .
 
-# RUN adduser RCE -D
+RUN adduser RCE -D
 
-# USER RCE
+USER RCE
 
 EXPOSE 5124
 
